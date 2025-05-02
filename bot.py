@@ -1,15 +1,26 @@
+from aiogram import Bot, Dispatcher, types
+from aiogram.utils import executor
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 import os
-import telebot
 
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-bot = telebot.TeleBot(TOKEN)
+# Токен из переменной окружения
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher(bot)
 
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "Привет! Я — Боречка, твой кактус-бот.")
+@dp.message_handler(commands=["start"])
+async def start_handler(message: types.Message):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    web_app_btn = KeyboardButton(
+        text="Запустить Боречку",
+        web_app=WebAppInfo(url="https://borechka-bot.vercel.app")  # <-- сюда вставлен твой домен
+    )
+    markup.add(web_app_btn)
 
-@bot.message_handler(func=lambda message: True)
-def echo_all(message):
-    bot.reply_to(message, "Ты написал: " + message.text)
+    await message.answer(
+        "Привет! Я — Боречка, твой кактус-бот. Нажми кнопку ниже, чтобы начать!",
+        reply_markup=markup
+    )
 
-bot.polling(none_stop=True)
+if __name__ == "__main__":
+    executor.start_polling(dp)
